@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantau Cuan Realtime</title>
+    <meta name="theme-color" content="#131722">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #131722; /* Warna khas trading */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            background: #1e222d;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        h1 { margin: 0; font-size: 1.2rem; }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .chart-box {
+            height: 400px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2a2e39;
+        }
+        .install-btn {
+            display: none; /* Muncul cuma kalau belum di-install */
+            background: #2962ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🔥 Gold & USD Tracker</h1>
+    <button id="installBtn" class="install-btn">📲 Install App</button>
+</header>
+
+<div class="container">
+    <h3>Emas (XAU/USD)</h3>
+    <div class="chart-box">
+        <div class="tradingview-widget-container">
+            <div id="tradingview_gold"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+            <script type="text/javascript">
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "OANDA:XAUUSD",
+                "interval": "D",
+                "timezone": "Asia/Jakarta",
+                "theme": "dark",
+                "style": "1",
+                "locale": "id",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": false,
+                "container_id": "tradingview_gold"
+            });
+            </script>
+        </div>
+    </div>
+
+    <h3>Dolar (USD/IDR)</h3>
+    <div class="chart-box">
+        <div class="tradingview-widget-container">
+            <div id="tradingview_usd"></div>
+            <script type="text/javascript">
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "FX_IDC:USDIDR",
+                "interval": "D",
+                "timezone": "Asia/Jakarta",
+                "theme": "dark",
+                "style": "1",
+                "locale": "id",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": false,
+                "container_id": "tradingview_usd"
+            });
+            </script>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Logic buat Install PWA
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'inline-block';
+    });
+
+    installBtn.addEventListener('click', (e) => {
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the A2HS prompt');
+            }
+            deferredPrompt = null;
+        });
+    });
+
+    // Register Service Worker (Wajib buat PWA)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+</script>
+
+</body>
+</html>
+
