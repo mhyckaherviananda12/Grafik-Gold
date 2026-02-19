@@ -3,212 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Market Dashboard</title>
-    <meta name="theme-color" content="#0f172a">
+    <title>Pro Market Monitor</title>
+    <meta name="theme-color" content="#0b0e11">
     <link rel="manifest" href="manifest.json">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text-main: #f8fafc;
-            --accent: #3b82f6;
+            --bg-body: #0b0e11;
+            --bg-card: #1e2329;
+            --primary: #fcd535; /* Gold Yellow */
+            --secondary: #0ecb81; /* Bullish Green */
+            --text-main: #eaecef;
+            --text-muted: #848e9c;
+            --border: #2b3139;
+            --nav-height: 60px;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
             color: var(--text-main);
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* No scroll body */
         }
 
-        /* Navbar Sederhana */
-        nav {
+        /* --- HEADER --- */
+        header {
+            height: 50px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 1rem 1.5rem;
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 50;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-body);
         }
 
-        .logo {
-            font-weight: 800;
-            font-size: 1.25rem;
-            background: linear-gradient(to right, #60a5fa, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .install-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 99px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
-            display: none; /* Hidden by default */
-        }
-        
-        .install-btn:active { transform: scale(0.95); }
-
-        /* Container Grid Utama - Ini Kuncinya */
-        main {
-            flex: 1;
-            padding: 1rem;
-            display: grid;
-            gap: 1rem;
-            /* Default Mobile: 1 Kolom */
-            grid-template-columns: 1fr; 
-        }
-
-        /* Responsif buat Tablet & Laptop (Lebar > 768px) */
-        @media (min-width: 768px) {
-            main {
-                /* Ubah jadi 2 kolom sama rata */
-                grid-template-columns: 1fr 1fr; 
-                padding: 1.5rem;
-                gap: 1.5rem;
-                height: calc(100vh - 70px); /* Full screen minus navbar */
-                overflow: hidden; /* Biar scroll ada di dalam card */
-            }
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.05);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            height: 100%;
-            min-height: 450px; /* Tinggi minimal di HP */
-        }
-
-        .card-header {
-            padding: 12px 16px;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+        .brand {
+            font-weight: 700;
+            font-size: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.9rem;
         }
-        
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .dot.gold { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
-        .dot.usd { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
 
-        .chart-container {
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: var(--secondary);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--secondary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .install-btn {
+            background: linear-gradient(90deg, #fcd535, #fbc02d);
+            color: #000;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+        }
+
+        /* --- MAIN CONTENT AREA --- */
+        main {
             flex: 1;
             position: relative;
+            display: flex;
+            /* Default Mobile: Tampilkan hanya tab yang aktif */
         }
 
-        /* Override style TradingView biar pas */
-        .tradingview-widget-container {
-            height: 100% !important;
-            width: 100% !important;
+        .chart-view {
+            width: 100%;
+            height: 100%;
+            display: none; /* Hide all by default */
+            flex-direction: column;
         }
-        iframe { height: 100% !important; width: 100% !important; }
 
+        .chart-view.active {
+            display: flex;
+        }
+
+        .tv-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- BOTTOM NAV (MOBILE ONLY) --- */
+        .mobile-nav {
+            height: var(--nav-height);
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            background-color: currentColor;
+            mask-size: contain;
+            -webkit-mask-size: contain;
+            mask-repeat: no-repeat;
+            -webkit-mask-repeat: no-repeat;
+            mask-position: center;
+            -webkit-mask-position: center;
+        }
+
+        /* Icons simple pake CSS shapes/mask */
+        .icon-gold { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="black" stroke-width="2" fill="none"/><path d="M12 7v10M8 12h8" stroke="black" stroke-width="2"/></svg>'); }
+        .icon-money { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="5" width="20" height="14" rx="2" stroke="black" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="black" stroke-width="2"/></svg>'); }
+
+        /* --- DESKTOP / TABLET TWEAKS (> 768px) --- */
+        @media (min-width: 768px) {
+            .mobile-nav {
+                display: none; /* Hapus navigasi bawah di desktop */
+            }
+
+            main {
+                display: grid;
+                grid-template-columns: 1fr 1fr; /* Split screen */
+                gap: 4px;
+                background-color: var(--border); /* Jadi garis pemisah */
+            }
+
+            .chart-view {
+                display: flex !important; /* Paksa muncul dua-duanya */
+            }
+            
+            /* Tambah label kecil di pojok chart desktop biar tau mana yg mana */
+            .chart-view::before {
+                content: attr(data-label);
+                position: absolute;
+                top: 10px;
+                left: 60px; /* Geser biar ga nabrak toolbar TV */
+                z-index: 10;
+                background: rgba(30,35,41,0.8);
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                color: var(--text-muted);
+                pointer-events: none;
+            }
+            
+            .chart-view:first-child { border-right: 1px solid var(--border); }
+        }
     </style>
 </head>
 <body>
 
-<nav>
-    <div class="logo">⚡ MarketFlash</div>
-    <button id="installBtn" class="install-btn">Install App</button>
-</nav>
+<header>
+    <div class="brand">
+        <div class="live-indicator"></div>
+        <span>Market<span style="color:var(--primary)">Pro</span></span>
+    </div>
+    <button id="installBtn" class="install-btn">INSTALL APP</button>
+</header>
 
 <main>
-    <div class="card">
-        <div class="card-header">
-            <div class="dot gold"></div>
-            XAU/USD (Gold)
-        </div>
-        <div class="chart-container">
-            <div id="tv_gold" style="height:100%; width:100%"></div>
-        </div>
+    <div id="view-gold" class="chart-view active" data-label="GOLD (XAU/USD)">
+        <div class="tv-container" id="tv_gold"></div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <div class="dot usd"></div>
-            USD/IDR (Rupiah)
-        </div>
-        <div class="chart-container">
-            <div id="tv_usd" style="height:100%; width:100%"></div>
-        </div>
+    <div id="view-usd" class="chart-view" data-label="USD/IDR">
+        <div class="tv-container" id="tv_usd"></div>
     </div>
 </main>
 
+<nav class="mobile-nav">
+    <div class="nav-item active" onclick="switchTab('gold')">
+        <div class="nav-icon icon-gold"></div>
+        <span>XAU/USD</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('usd')">
+        <div class="nav-icon icon-money"></div>
+        <span>USD/IDR</span>
+    </div>
+</nav>
+
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    // Konfigurasi Widget yang sama, tapi container ID beda
-    const commonConfig = {
+    // --- TradingView Config ---
+    const config = {
         "autosize": true,
-        "interval": "60", // Pakai timeframe 1 jam biar lebih detail
+        "interval": "60",
         "timezone": "Asia/Jakarta",
         "theme": "dark",
         "style": "1",
         "locale": "id",
+        "toolbar_bg": "#f1f3f6",
         "enable_publishing": false,
-        "hide_top_toolbar": false,
+        "hide_side_toolbar": false,
+        "allow_symbol_change": false,
         "save_image": false,
-        "backgroundColor": "rgba(15, 23, 42, 1)" // Match background
+        "backgroundColor": "rgba(11, 14, 17, 1)", // Match body bg
+        "gridLineColor": "rgba(43, 49, 57, 0.3)"
     };
 
-    // Render Widget Gold
-    new TradingView.widget(Object.assign({}, commonConfig, {
+    new TradingView.widget(Object.assign({}, config, {
         "symbol": "OANDA:XAUUSD",
         "container_id": "tv_gold"
     }));
 
-    // Render Widget USD
-    new TradingView.widget(Object.assign({}, commonConfig, {
+    new TradingView.widget(Object.assign({}, config, {
         "symbol": "FX_IDC:USDIDR",
         "container_id": "tv_usd"
     }));
 
-    // --- Logic Install PWA (Tetap sama) ---
+    // --- Tab Switch Logic (Mobile) ---
+    function switchTab(tab) {
+        // Cek dulu apakah kita di mode mobile (navigasi bawah visible)
+        if (window.getComputedStyle(document.querySelector('.mobile-nav')).display === 'none') return;
+
+        // Reset
+        document.querySelectorAll('.chart-view').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+        // Activate
+        if (tab === 'gold') {
+            document.getElementById('view-gold').classList.add('active');
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+        } else {
+            document.getElementById('view-usd').classList.add('active');
+            document.querySelectorAll('.nav-item')[1].classList.add('active');
+        }
+    }
+
+    // --- PWA Install Logic ---
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        installBtn.style.display = 'block'; // Munculin tombol
+        installBtn.style.display = 'block';
     });
 
     installBtn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
         installBtn.style.display = 'none';
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`User response: ${outcome}`);
         deferredPrompt = null;
     });
 
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 </script>
 
 </body>
 </html>
-
-
